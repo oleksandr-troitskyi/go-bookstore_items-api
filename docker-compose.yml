@@ -1,0 +1,31 @@
+version: '2.2'
+services:
+    nginx:
+        container_name: go_bookstore_items_api_nginx
+        build: ./docker/nginx
+        restart: always
+        volumes:
+            - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/site.conf
+            - ./docker/nginx/log:/var/log/nginx
+        ports:
+            - "8087:80"
+        links:
+            - elasticsearch
+    elasticsearch:
+        container_name: go_bookstore_items_api_elasticsearch
+        build: ./docker/db/elastic
+        restart: always
+        environment:
+            - node.name=es01
+            - cluster.name=es-docker-cluster
+            - cluster.initial_master_nodes=es01
+            - bootstrap.memory_lock=true
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+        volumes:
+            - ./docker/db/elastic/data:/usr/share/elasticsearch/data
+        ports:
+            - 9200:9200
